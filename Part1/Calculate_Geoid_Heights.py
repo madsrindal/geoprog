@@ -64,7 +64,7 @@ def calculate_egm_model_world():
                 p_matrix[n][m] = pbt.get_p_bar(n, m, mt.radians(phi), p_value_dict)
 
         lmd_counter = 0
-        for lmd in progressbar(np.arange(-180, 180.5, 0.5)):
+        for lmd in np.arange(-180, 180.5, 0.5):
             # file.write(str(phi)+'\t'+str(lmd)+'\t'+str(pbt.get_n_grv_new(lmd, egm2008_dict, n_max, p_matrix))+'\n')
             file.write(str(phi)+'\t'+str(lmd)+'\t'+str(pbt.get_n_grv_new1(lmd, n_max, p_matrix,
                                                                           r_matrix_list[lmd_counter],
