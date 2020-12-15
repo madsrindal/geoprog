@@ -28,7 +28,7 @@ def calculate_ggm_model_world():
 
 def calculate_egm_model_world():
     start_time = time()
-    n_max = 2050
+    n_max = 50
 
     print('Creating dictionaries from the EGM2008 file')
     egm2008_dict = Ggm.read_file()
@@ -36,15 +36,15 @@ def calculate_egm_model_world():
     print('Creating r_ and q_matrices, multiplying each matrix with cos and sin of radians(lambda)*m')
     r_matrix, q_matrix = pbt.get_rq_bar_matrix(egm2008_dict, n_max)
 
-    file = open('Part1/Results/egm_results_nmax.txt', 'w')
+    file = open('Part1/Results/egm_results_n50.txt', 'w')
     file.write('LAT\tLON\tGeoidal Height\n')
 
     #  pool = mp.Pool(mp.cpu_count())
 
-    r_matrix_list = []
-    q_matrix_list = []
+    # r_matrix_list = []
+    # q_matrix_list = []
 
-    print('Creating two lists containing of different matrices based on different lambdas...')
+    '''print('Creating two lists containing of different matrices based on different lambdas...')
     for lmd in np.arange(-180, 180.5, 0.5):
         r = np.copy(r_matrix)
         q = np.copy(q_matrix)
@@ -52,7 +52,7 @@ def calculate_egm_model_world():
             r[:, m] *= mt.cos(m * mt.radians(lmd))
             q[:, m] *= mt.sin(m * mt.radians(lmd))
         r_matrix_list.append(r)
-        q_matrix_list.append(q)
+        q_matrix_list.append(q)'''
 
     print('Calculating geoidal heights all over the world using EGM2008 values and writing these to file...')
     for phi in progressbar(np.arange(-90, 90.5, 0.5)):
@@ -63,14 +63,16 @@ def calculate_egm_model_world():
             for m in range(0, n_max+1):
                 p_matrix[n][m] = pbt.get_p_bar(n, m, mt.radians(phi), p_value_dict)
 
-        lmd_counter = 0
-        for lmd in progressbar(np.arange(-180, 180.5, 0.5)):
-            # file.write(str(phi)+'\t'+str(lmd)+'\t'+str(pbt.get_n_grv_new(lmd, egm2008_dict, n_max, p_matrix))+'\n')
-            file.write(str(phi)+'\t'+str(lmd)+'\t'+str(pbt.get_n_grv_new1(lmd, n_max, p_matrix,
-                                                                          r_matrix_list[lmd_counter],
-                                                                          q_matrix_list[lmd_counter])) + '\n')
+        for lmd in np.arange(-180, 180.5, 0.5):
+            r = np.copy(r_matrix)
+            q = np.copy(q_matrix)
+            for m in range(0, n_max + 1):
+                r[:, m] *= mt.cos(m * mt.radians(lmd))
+                q[:, m] *= mt.sin(m * mt.radians(lmd))
 
-            lmd_counter += 1
+            # file.write(str(phi)+'\t'+str(lmd)+'\t'+str(pbt.get_n_grv_new(lmd, egm2008_dict, n_max, p_matrix))+'\n')
+            file.write(str(phi)+'\t'+str(lmd)+'\t'+str(pbt.get_n_grv_new1(lmd, n_max, p_matrix, r, q)) + '\n')
+
         '''lambdas = np.arange(-180, 180.5, 0.5)
         results = pool.starmap(pbt.get_n_grv_new, [(lmd, egm2008_dict, n_max, p_matrix) for lmd in lambdas])
 
