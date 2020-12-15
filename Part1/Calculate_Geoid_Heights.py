@@ -28,7 +28,7 @@ def calculate_ggm_model_world():
 
 def calculate_egm_model_world():
     start_time = time()
-    n_max = 2050
+    n_max = 50
 
     print('Creating dictionaries from the EGM2008 file')
     egm2008_dict = Ggm.read_file()
