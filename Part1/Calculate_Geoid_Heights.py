@@ -28,7 +28,7 @@ def calculate_ggm_model_world():
 
 def calculate_egm_model_world():
     start_time = time()
-    n_max = 50
+    n_max = 10
 
     print('Creating dictionaries from the EGM2008 file')
     egm2008_dict = Ggm.read_file()
@@ -36,15 +36,12 @@ def calculate_egm_model_world():
     print('Creating r_ and q_matrices, multiplying each matrix with cos and sin of radians(lambda)*m')
     r_matrix, q_matrix = pbt.get_rq_bar_matrix(egm2008_dict, n_max)
 
-    file = open('Part1/Results/egm_results_n50.txt', 'w')
-    file.write('LAT\tLON\tGeoidal Height\n')
-
-    #  pool = mp.Pool(mp.cpu_count())
-
-    # r_matrix_list = []
-    # q_matrix_list = []
+    n_dict = {}
 
     '''print('Creating two lists containing of different matrices based on different lambdas...')
+    r_matrix_list = []
+    q_matrix_list = []
+    
     for lmd in np.arange(-180, 180.5, 0.5):
         r = np.copy(r_matrix)
         q = np.copy(q_matrix)
@@ -63,23 +60,22 @@ def calculate_egm_model_world():
             for m in range(0, n_max+1):
                 p_matrix[n][m] = pbt.get_p_bar(n, m, mt.radians(phi), p_value_dict)
 
-        for lmd in np.arange(-180, 180.5, 0.5):
+        for lmd in progressbar(np.arange(-180, 180.5, 0.5)):
             r = np.copy(r_matrix)
             q = np.copy(q_matrix)
             for m in range(0, n_max + 1):
                 r[:, m] *= mt.cos(m * mt.radians(lmd))
                 q[:, m] *= mt.sin(m * mt.radians(lmd))
 
-            # file.write(str(phi)+'\t'+str(lmd)+'\t'+str(pbt.get_n_grv_new(lmd, egm2008_dict, n_max, p_matrix))+'\n')
-            file.write(str(phi)+'\t'+str(lmd)+'\t'+str(pbt.get_n_grv_new1(lmd, n_max, p_matrix, r, q)) + '\n')
+            n_dict[(phi, lmd)] = pbt.get_n_grv_new1(lmd, n_max, p_matrix, r, q)
+            # file.write(str(phi)+'\t'+str(lmd)+'\t'+str(pbt.get_n_grv_new1(lmd, n_max, p_matrix, r, q)) + '\n')
 
-        '''lambdas = np.arange(-180, 180.5, 0.5)
-        results = pool.starmap(pbt.get_n_grv_new, [(lmd, egm2008_dict, n_max, p_matrix) for lmd in lambdas])
-
-        for i in range(len(results)):
-            file.write(str(phi)+'\t'+str(lambdas[i])+'\t'+str(results[i])+'\n')'''
-
+    file = open('Part1/Results/egm_results_n10.txt', 'w')
+    file.write('LAT\tLON\tGeoidal Height\n')
+    for key in n_dict:
+        file.write(str(key[0])+'\t'+str(key[1])+'\t'+str(n_dict[key]) + '\n')
     file.close()
+
     print('Calculated geoidal heights using EGM2008 values in ' + str(time()-start_time) + ' seconds')
 
 
