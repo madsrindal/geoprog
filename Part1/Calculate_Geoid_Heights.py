@@ -60,7 +60,7 @@ def calculate_egm_model_world():
             for m in range(0, n_max+1):
                 p_matrix[n][m] = pbt.get_p_bar(n, m, mt.radians(phi), p_value_dict)
 
-        for lmd in progressbar(np.arange(-180, 180.5, 0.5)):
+        for lmd in np.arange(-180, 180.5, 0.5):
             r = np.copy(r_matrix)
             q = np.copy(q_matrix)
             for m in range(0, n_max + 1):
@@ -70,7 +70,7 @@ def calculate_egm_model_world():
             n_dict[(phi, lmd)] = pbt.get_n_grv_new1(lmd, n_max, p_matrix, r, q)
             # file.write(str(phi)+'\t'+str(lmd)+'\t'+str(pbt.get_n_grv_new1(lmd, n_max, p_matrix, r, q)) + '\n')
 
-    file = open('Part1/Results/egm_results_n2050.txt', 'w')
+    file = open('Part1/Results/egm_results_n2050_final.txt', 'w')
     file.write('LAT\tLON\tGeoidal Height\n')
     for key in n_dict:
         file.write(str(key[0])+'\t'+str(key[1])+'\t'+str(n_dict[key]) + '\n')
