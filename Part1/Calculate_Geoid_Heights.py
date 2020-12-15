@@ -28,7 +28,7 @@ def calculate_ggm_model_world():
 
 def calculate_egm_model_world():
     start_time = time()
-    n_max = 10
+    n_max = 2050
 
     print('Creating dictionaries from the EGM2008 file')
     egm2008_dict = Ggm.read_file()
@@ -70,7 +70,7 @@ def calculate_egm_model_world():
             n_dict[(phi, lmd)] = pbt.get_n_grv_new1(lmd, n_max, p_matrix, r, q)
             # file.write(str(phi)+'\t'+str(lmd)+'\t'+str(pbt.get_n_grv_new1(lmd, n_max, p_matrix, r, q)) + '\n')
 
-    file = open('Part1/Results/egm_results_n10.txt', 'w')
+    file = open('Part1/Results/egm_results_n2050.txt', 'w')
     file.write('LAT\tLON\tGeoidal Height\n')
     for key in n_dict:
         file.write(str(key[0])+'\t'+str(key[1])+'\t'+str(n_dict[key]) + '\n')
