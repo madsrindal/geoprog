@@ -1,0 +1,8 @@
+HDR VARIABLE=Ocean_Bottom_Pressure
+HDR Additional_Processing=Map_Area_Averages_Removed
+HDR Additional_Processing=Time_Average_Removed_200301-200712
+HDR UNIT=100*(newton/m2)=mbar~=cmH2O
+HDR FILTER=NONE
+HDR SOURCE=ECCO_kf080
+HDR DATA_ARE_GRIDDED:lat=-89.5,-88.5,...,89.5 AND lon=0.5,1.5,...,359.5
+HDR BAD_VALUE=NOT_INCLUDED
