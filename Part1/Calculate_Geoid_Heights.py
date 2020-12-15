@@ -36,7 +36,7 @@ def calculate_egm_model_world():
     print('Creating r_ and q_matrices, multiplying each matrix with cos and sin of radians(lambda)*m')
     r_matrix, q_matrix = pbt.get_rq_bar_matrix(egm2008_dict, n_max)
 
-    file = open('Results/egm_results_nmax.txt', 'w')
+    file = open('Part1/Results/egm_results_nmax.txt', 'w')
     file.write('LAT\tLON\tGeoidal Height\n')
 
     #  pool = mp.Pool(mp.cpu_count())

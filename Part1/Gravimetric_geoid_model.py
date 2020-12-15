@@ -29,9 +29,9 @@ def create_dict(filename):
 # Reads the provided file and returns a dictionary on format {(N, M) = [C, S]}
 def read_file(egm2008=True):
     if egm2008:
-        path = '../../geoprog/Datafiles/Part1/EGM2008.gfc'
+        path = 'Datafiles/Part1/EGM2008.gfc'
     else:
-        path = '../../geoprog/Datafiles/Part1/GGM03S.gfc'
+        path = 'Datafiles/Part1/GGM03S.gfc'
     return create_dict(path)
 
 
