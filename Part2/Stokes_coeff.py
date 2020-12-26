@@ -15,7 +15,7 @@ def clean_string(string):
 
 def read_love_file():
     counter = 0
-    file = open('love_number.txt', 'r')
+    file = open('../Datafiles/Part2/love_number.txt', 'r')
     for line in file:
         line_values = line.split(' ')
         if counter >= 16:
@@ -89,7 +89,7 @@ ecco_list = []
 gldas_list = []
 
 
-def get_surface_density(phi, lmd, n_max, year_number, dictionary, gldas=True, rq_dict=True):
+def get_sigma(phi, lmd, n_max, year_number, dictionary, gldas=True, rq_dict=True):
     phi = mt.radians(phi)
     lmd = mt.radians(lmd)
     constant = ((a * rho_ave)/3)

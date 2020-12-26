@@ -79,51 +79,6 @@ def calculate_egm_model_world():
     print('Calculated geoidal heights using EGM2008 values in ' + str(time()-start_time) + ' seconds')
 
 
-'''def calculate_egm_model_world1():
-    start_time = time()
-    n_max = 50
-
-    print('Creating dictionaries from the EGM2008 file')
-    egm2008_dict = Ggm.read_file()
-
-    print('Creating r_ and q_matrices, multiplying each matrix with cos and sin of radians(lambda)*m')
-    r_matrix, q_matrix = pbt.get_rq_bar_matrix(egm2008_dict, n_max)
-
-    file = open('Results/egm_results_nmax.txt', 'w')
-    file.write('LAT\tLON\tGeoidal Height\n')
-
-    print('Creating two lists containing of different matrices based on different lambdas...')
-
-    print('Calculating geoidal heights all over the world using EGM2008 values and writing these to file...')
-    for phi in progressbar(np.arange(-90, 90.5, 0.5)):
-
-        p_matrix = np.zeros((n_max+1) ** 2).reshape(n_max+1, n_max+1)
-        p_value_dict = {}
-        for n in range(0, n_max+1):
-            for m in range(0, n_max+1):
-                p_matrix[n][m] = pbt.get_p_bar(n, m, mt.radians(phi), p_value_dict)
-
-        for lmd in np.arange(-180, 180.5, 0.5):
-            r = np.copy(r_matrix)
-            q = np.copy(q_matrix)
-
-            for m in range(0, n_max + 1):
-                r[:, m] *= mt.cos(m * mt.radians(lmd))
-                q[:, m] *= mt.sin(m * mt.radians(lmd))
-
-            # file.write(str(phi)+'\t'+str(lmd)+'\t'+str(pbt.get_n_grv_new(lmd, egm2008_dict, n_max, p_matrix))+'\n')
-            file.write(str(phi)+'\t'+str(lmd)+'\t'+str(pbt.get_n_grv_new1(lmd, n_max, p_matrix, r, q)) + '\n')
-
-        """lambdas = np.arange(-180, 180.5, 0.5)
-        results = pool.starmap(pbt.get_n_grv_new, [(lmd, egm2008_dict, n_max, p_matrix) for lmd in lambdas])
-
-        for i in range(len(results)):
-            file.write(str(phi)+'\t'+str(lambdas[i])+'\t'+str(results[i])+'\n')"""
-
-    file.close()
-    print('Calculated geoidal heights using EGM2008 values in ' + str(time()-start_time) + ' seconds')'''
-
-
 def test():
     tid = time()
     # egm2008_dict = Ggm.read_file()

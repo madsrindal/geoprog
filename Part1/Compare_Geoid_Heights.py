@@ -5,7 +5,7 @@ import numpy as np
 
 
 def calculate_n_geometric():
-    file = open("../../geoprog/Datafiles/Part1/GNSS_data.txt")
+    file = open("../../Datafiles/Part1/GNSS_data.txt")
 
     n_dict = {}
 
@@ -67,32 +67,82 @@ def save_n_gravimetric_gnss(egm=True):
     file.close()
 
 
-def main():
-    print("Starting...")
+def get_n_gravimetric(egm=True):
 
-    print('Calculating gravimetric heights based on GNSS locations...')
-    grav_dict = calculate_n_gravimetric(False)
+    n_dict = {}
 
-    print('Calculating geometric heights based on provided GNSS data...')
+    if egm:
+        path = '../../Part1/Results/Calculated_GNSS_heights_EGM2008'
+    else:
+        path = '../../Part1/Results/Calculated_GNSS_heights_GGM03S'
+
+    file = open(path, 'r')
+    counter = 0
+
+    for line in file:
+        if counter > 0:
+            line_values = line.split()
+            lat, lon = float(line_values[0]), float(line_values[1])
+            n = float(line_values[2])
+            n_dict[(lat, lon)] = n
+        counter += 1
+    file.close()
+
+    return n_dict
+
+
+def get_diff_dict(egm=True):
+
     geo_dict = calculate_n_geometric()
+    grav_dict = get_n_gravimetric(egm)
+
+    diff_dict = {}
+
+    for key in geo_dict:
+        diff_dict[key] = geo_dict[key] - grav_dict[key]
+
+    return diff_dict
+
+
+def get_statistics(dictionary):
 
     diffs = []
-
-    print('Calculating differences between gravimetric and geometric heights...')
-    for key in grav_dict:
-        diffs.append(grav_dict[key] - geo_dict[key])
-
     abs_diffs = []
-    for i in diffs:
-        abs_diffs.append(abs(i))
 
-    print('---------------------------------------------------------------------')
+    for key in dictionary:
+        diffs.append(dictionary[key])
+        abs_diffs.append(abs(dictionary[key]))
 
-    print('Maximum difference: ' + str(max(abs_diffs)))
-    print('Minimum difference: ' + str(min(abs_diffs)))
-    print('Mean of differences: ' + str(np.mean(diffs)))
-    print('Standard deviation: ' + str(np.std(diffs)))
+    max_diff = max(abs_diffs)
+    min_diff = min(abs_diffs)
+    mean_diff = np.mean(abs_diffs)
+    std = np.std(diffs)
+
+    return max_diff, min_diff, mean_diff, std
+
+
+def main():
+
+    diff_dict_egm = get_diff_dict(egm=True)
+
+    max_diff_egm, min_diff_egm, mean_diff_egm, std_egm = get_statistics(diff_dict_egm)
+
+    print('Maximum difference: ', max_diff_egm)
+    print('Minimum difference: ', min_diff_egm)
+    print('Mean of differences: ', mean_diff_egm)
+    print('Standard deviation: ', std_egm)
+
+    print('-------------------------------------------------')
+
+    diff_dict_ggm = get_diff_dict(egm=False)
+
+    max_diff_ggm, min_diff_ggm, mean_diff_ggm, std_ggm = get_statistics(diff_dict_ggm)
+
+    print('Maximum difference: ', max_diff_ggm)
+    print('Minimum difference: ', min_diff_ggm)
+    print('Mean of differences: ', mean_diff_ggm)
+    print('Standard deviation: ', std_ggm)
 
 
 if __name__ == '__main__':
-    save_n_gravimetric_gnss(True)
+    main()

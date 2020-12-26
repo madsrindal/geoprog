@@ -42,7 +42,7 @@ def calculate_all_coefficients():
     print('Program finished in a total of ' + str(time()-start_time) + ' seconds.')
 
 
-def calculate_all_sigmas(year_num, gldas=True):
+def calculate_sigmas_for_one_file(year_num, gldas=True):
     if gldas:
         true_file = '../../geoprog/Datafiles/Part2/GLDAS/GLDAS_Oct_' + str(year_num) + '.txt'
         coef_file = '../../geoprog/Part2/Results/GLDAS/GLDAS_Coefficients_Oct_' + str(year_num) + '.txt'
@@ -69,7 +69,7 @@ def calculate_all_sigmas(year_num, gldas=True):
     f = open(res_file, 'w')
     f.write('LON\tLAT\tVALUE\n')
     for key in key_dict:
-        sigma = Sc.get_surface_density(key[0], key[1], 100, year_num, res_dict, gldas=True, rq_dict=True)
+        sigma = Sc.get_sigma(key[0], key[1], 100, year_num, res_dict, gldas=True, rq_dict=True)
         f.write(str(key[1]) + '\t' + str(key[0]) + '\t' + str(sigma/1000) + '\n')
     f.close()
 
@@ -80,7 +80,7 @@ def calculate_sigmas_for_every_file():
     print('The resulting files containing calculated total H20 values can later be found in Part2/Results/GLDAS')
 
     for year_num in progressbar(range(5, 15)):
-        calculate_all_sigmas(year_num, True)
+        calculate_sigmas_for_one_file(year_num, True)
 
     print('Total h20 values for every year from 2005 to 2014 calculated in ' + str(time() - time_one) + ' seconds')
 
@@ -92,7 +92,7 @@ def calculate_sigmas_for_every_file():
           'Part2/Results/ECCO')
 
     for year_num in progressbar(range(5, 15)):
-        calculate_all_sigmas(year_num, False)
+        calculate_sigmas_for_one_file(year_num, False)
 
     print('OBP values for every year from 2005 to 2014 calculated in ' + str(time() - time_two) + ' seconds')
 
@@ -105,9 +105,11 @@ def compare_sigmas(year_num, gldas=True):
     if gldas:
         file = open('../../geoprog/Part2/Results/GLDAS/GLDAS_totH20_Oct_' + str(year_num) + '.txt')
         true_sigma_dict = Sc.gldas_list[year_num-5]
+        name = 'GLDAS'
     else:
         file = open('../../geoprog/Part2/Results/ECCO/ECCO_OBP_Oct_' + str(year_num) + '.txt')
         true_sigma_dict = Sc.ecco_list[year_num - 5]
+        name = 'ECCO'
 
     calculated_sigma_dict = {}
 
@@ -129,10 +131,13 @@ def compare_sigmas(year_num, gldas=True):
     for i in diffs:
         abs_diffs.append(abs(i))
 
+    print('Statistics regarding the comparison between given sigma and calculated sigma based on file ' + name + '_Oct_'
+          + str(year_num))
+    print('---------------------------------------------------------------------------------------------------------')
+    print('Standard deviation: ' + str(np.std(diffs)))
+    print('Mean of differences: ' + str(np.mean(abs_diffs)))
     print('Maximum difference: ' + str(max(abs_diffs)))
     print('Minimum difference: ' + str(min(abs_diffs)))
-    print('Mean of differences: ' + str(np.mean(abs_diffs)))
-    print('Standard deviation: ' + str(np.std(diffs)))
 
 
 if __name__ == '__main__':
