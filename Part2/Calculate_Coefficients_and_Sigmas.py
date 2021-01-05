@@ -115,11 +115,9 @@ def compare_sigmas(year_num, gldas=True):
     if gldas:
         file = open('../../geoprog/Part2/Results/GLDAS/GLDAS_totH20_Oct_' + str(year_num) + '.txt')
         true_sigma_dict = SFP2.gldas_list[year_num-5]
-        name = 'GLDAS'
     else:
         file = open('../../geoprog/Part2/Results/ECCO/ECCO_OBP_Oct_' + str(year_num) + '.txt')
         true_sigma_dict = SFP2.ecco_list[year_num - 5]
-        name = 'ECCO'
 
     calculated_sigma_dict = {}
 
@@ -144,11 +142,30 @@ def compare_sigmas(year_num, gldas=True):
     for i in diffs:
         abs_diffs.append(abs(i))
 
-    # Printing the statistics for better visualization.
+    std = np.std(diffs)
+    mean = np.mean(abs_diffs)
+    maximum = max(abs_diffs)
+    minimum = min(abs_diffs)
+
+    return std, mean, maximum, minimum
+
+
+def print_statistics(year_num, gldas=True):
+    std, mean, maximum, minimum = compare_sigmas(year_num, gldas)
+
+    if gldas:
+        name = 'GLDAS'
+    else:
+        name = 'ECCO'
+
     print('Statistics regarding the comparison between given sigma and calculated sigma based on file ' + name + '_Oct_'
           + str(year_num))
     print('---------------------------------------------------------------------------------------------------------')
-    print('Standard deviation: ' + str(np.std(diffs)))
-    print('Mean of differences: ' + str(np.mean(abs_diffs)))
-    print('Maximum difference: ' + str(max(abs_diffs)))
-    print('Minimum difference: ' + str(min(abs_diffs)))
+    print('Standard deviation: ', std)
+    print('Mean of differences: ', mean)
+    print('Maximum difference: ', maximum)
+    print('Minimum difference: ', minimum)
+
+
+if __name__ == '__main__':
+    print_statistics(14, gldas=True)

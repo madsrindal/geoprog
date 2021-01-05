@@ -65,3 +65,8 @@ def calculate_geoidal_heights_world(n_max, egm=True):
 
     print('Calculated geoidal heights using ' + str(model_name) + ' values of degree n=' + str(n_max) + ' in ' +
           str(time() - start_time) + ' seconds. The results are saved as ' + file_name + ' found in the results folder')
+
+
+# The main function i ready to calculate the geoid model based on GGM03S with n_max being the highest degree available.
+if __name__ == '__main__':
+    calculate_geoidal_heights_world(180, False)
