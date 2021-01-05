@@ -123,10 +123,12 @@ def plot_pre_processed_sigma_file_world(year_num, gldas=True):
 
 
 # Main function used to plot the differences of either GLDAS or ECCO, in a given year between 5 and 14.
-def display_plot():
-    print('Plotting differences between true sigma values and calculated sigma values...')
-    plot_pre_processed_sigma_file_world(14, False)
+def display_plots(year_num):
+    print('Plotting differences between true sigma values and calculated sigma values for both ECCO and GLDAS file...')
+    plot_pre_processed_sigma_file_world(year_num, True)
+    print('----------------------------------------------')
+    plot_pre_processed_sigma_file_world(year_num, False)
 
 
 if __name__ == '__main__':
-    display_plot()
+    display_plots(year_num=14)

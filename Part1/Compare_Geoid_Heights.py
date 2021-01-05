@@ -5,8 +5,11 @@ import numpy as np
 
 # Function used to calculate the geometric heights from provided GNSS leveling data.
 # Returns a dictionary of geometric height values for each available pair of phi and lambda.
-def calculate_n_geometric():
-    file = open("../../geoprog/Datafiles/Part1/GNSS_data.txt")
+def calculate_n_geometric(gnss_plot=False):
+    if gnss_plot:
+        file = open("../../Datafiles/Part1/GNSS_data.txt")
+    else:
+        file = open("../../geoprog/Datafiles/Part1/GNSS_data.txt")
 
     n_dict = {}
 
@@ -23,8 +26,11 @@ def calculate_n_geometric():
 
 
 # Function used to calculate the gravimetric heights for the locations provided in the GNSS data file returned as a dict
-def calculate_n_gravimetric(egm=True):
-    file = open("../../geoprog/Datafiles/Part1/GNSS_data.txt")
+def calculate_n_gravimetric(gnss_plot=False, egm=True):
+    if gnss_plot:
+        file = open("../../Datafiles/Part1/GNSS_data.txt")
+    else:
+        file = open("../../geoprog/Datafiles/Part1/GNSS_data.txt")
 
     n_dict = {}
     gnss_dict = {}
@@ -80,15 +86,21 @@ def save_n_gravimetric_gnss(egm=True):
 
 # Function used to read a pre processed file of gravimetric heights computed from the GNSS file and return the values
 # as a dictionary
-def get_n_gravimetric(egm=True):
+def get_n_gravimetric(gnss_plot=False, egm=True):
 
     n_dict = {}
 
     # Determines where to collect the pre processed values
-    if egm:
-        path = '../../geoprog/Part1/Results/Calculated_GNSS_heights_EGM2008'
+    if gnss_plot:
+        if egm:
+            path = '../../Part1/Results/Calculated_GNSS_heights_EGM2008'
+        else:
+            path = '../../Part1/Results/Calculated_GNSS_heights_GGM03S'
     else:
-        path = '../../geoprog/Part1/Results/Calculated_GNSS_heights_GGM03S'
+        if egm:
+            path = '../../geoprog/Part1/Results/Calculated_GNSS_heights_EGM2008'
+        else:
+            path = '../../geoprog/Part1/Results/Calculated_GNSS_heights_GGM03S'
 
     file = open(path, 'r')
     counter = 0
@@ -108,11 +120,11 @@ def get_n_gravimetric(egm=True):
 
 # Function used to create and return a dictionary containing differences in values between geometric and gravimetric
 # height values
-def get_diff_dict(egm=True):
+def get_diff_dict(gnss_plot=False, egm=True):
 
     # Creates the two dictionaries
-    geo_dict = calculate_n_geometric()
-    grav_dict = get_n_gravimetric(egm)
+    geo_dict = calculate_n_geometric(gnss_plot=gnss_plot)
+    grav_dict = get_n_gravimetric(gnss_plot=gnss_plot, egm=egm)
 
     diff_dict = {}
 

@@ -10,7 +10,7 @@ from Part1 import Compare_Geoid_Heights as Cgh
 def get_degree_interval(key_values=True):
 
     # Creates the dictionary containing the available values for lat and long, and two empty lists
-    n_dict = Cgh.calculate_n_geometric()
+    n_dict = Cgh.calculate_n_geometric(gnss_plot=True)
     lat_list = []
     lon_list = []
 
@@ -40,10 +40,10 @@ def plot_height_differences(egm=True):
     # Creates a dictionary depending on the model used and saves the name (EGM or GGM)
     if egm:
         model_name = 'EGM2008'
-        diff_dict = Cgh.get_diff_dict(True)
+        diff_dict = Cgh.get_diff_dict(gnss_plot=True, egm=True)
     else:
         model_name = 'GGM03S'
-        diff_dict = Cgh.get_diff_dict(False)
+        diff_dict = Cgh.get_diff_dict(gnss_plot=True, egm=False)
 
     # Chosen color palette
     mycmap = plt.get_cmap('jet')
