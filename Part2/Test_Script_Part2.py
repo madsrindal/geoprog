@@ -2,7 +2,7 @@ from Part2 import Calculate_Coefficients_and_Sigmas as CCS
 from Part2 import Sub_Functions_Part2 as SFP2
 
 
-def main(n_max=10, year_num=14, gldas=True):
+def main(n_max, year_num, gldas=True):
     print('The following values has been chosen for this test: ')
     print('n_max: ', n_max)
     print('Year number: ', year_num)
@@ -49,5 +49,5 @@ def main(n_max=10, year_num=14, gldas=True):
 
 
 if __name__ == '__main__':
-    main()
+    main(10, 14, gldas=True)
 
