@@ -1,14 +1,16 @@
-from Part1 import Gravimetric_geoid_model as Ggm
-from Part1 import p_bar_testing as pbt
+from Part1 import Sub_Functions_Part1 as SFP1
 from progressbar import progressbar
 import numpy as np
 
 
+# Function used to calculate the geometric heights from provided GNSS leveling data.
+# Returns a dictionary of geometric height values for each available pair of phi and lambda.
 def calculate_n_geometric():
-    file = open("../../Datafiles/Part1/GNSS_data.txt")
+    file = open("../../geoprog/Datafiles/Part1/GNSS_data.txt")
 
     n_dict = {}
 
+    # Looping through the file, computing the height and saving them to a dictionary
     for line in file:
         line_values = line.split()
         lat, long = float(line_values[1]), float(line_values[2])
@@ -20,20 +22,23 @@ def calculate_n_geometric():
     return n_dict
 
 
+# Function used to calculate the gravimetric heights for the locations provided in the GNSS data file returned as a dict
 def calculate_n_gravimetric(egm=True):
     file = open("../../geoprog/Datafiles/Part1/GNSS_data.txt")
 
     n_dict = {}
     gnss_dict = {}
 
+    # Check to determine what kind of model to ues in the coputations, and the degree n of these.
     print('Creating value dictionaries based on EGM2008 or GGM03S data...')
     if egm:
-        value_dict = Ggm.read_file(True)
+        value_dict = SFP1.read_file(True)
         n_max = 2050
     else:
-        value_dict = Ggm.read_file(False)
+        value_dict = SFP1.read_file(False)
         n_max = 180
 
+    # Creates a dictionary to obtain every pair of available pairings of phi and lambda.
     print('Reading GNSS file, creating a dictionary on format (phi, lmd) = geoid height...')
     for line in file:
         line_values = line.split()
@@ -42,23 +47,29 @@ def calculate_n_gravimetric(egm=True):
         gnss_dict[(phi, lmd)] = n
     file.close()
 
+    # Loop through each available key, and computes the gravimetric height at the given location, saving these in a dict
+    # The p_value_dictionary is emptied for every computation in order for the code not to crash because of memory error
     print('Calculating geoid height based on EGM or GGM model, saving them to a dictionary on format (phi, lmd) = N...')
     for key in progressbar(gnss_dict):
         p_value_dict = {}
-        n_dict[(key[0], key[1])] = pbt.get_n_grv(key[0], key[1], value_dict, n_max, p_value_dict)
+        n_dict[(key[0], key[1])] = SFP1.get_n_grv_modified(key[0], key[1], value_dict, n_max, p_value_dict)
 
     return n_dict
 
 
+# Function used to save a dictionary to a text file
 def save_n_gravimetric_gnss(egm=True):
 
+    # Computes the dictionary of gravimetric height values.
     n_dict = calculate_n_gravimetric(egm)
 
+    # Determine where to save the resultant file.
     if egm:
         file = open('../../geoprog/Part1/Results/Calculated_GNSS_heights_EGM2008_1', 'w')
     else:
         file = open('../../geoprog/Part1/Results/Calculated_GNSS_heights_GGM03S_1', 'w')
 
+    # Writes the values to file on format Latitude - Longitude - Height
     file.write('LAT\tLON\tGeoidal Height\n')
 
     for key in n_dict:
@@ -67,18 +78,22 @@ def save_n_gravimetric_gnss(egm=True):
     file.close()
 
 
+# Function used to read a pre processed file of gravimetric heights computed from the GNSS file and return the values
+# as a dictionary
 def get_n_gravimetric(egm=True):
 
     n_dict = {}
 
+    # Determines where to collect the pre processed values
     if egm:
-        path = '../../Part1/Results/Calculated_GNSS_heights_EGM2008'
+        path = '../../geoprog/Part1/Results/Calculated_GNSS_heights_EGM2008'
     else:
-        path = '../../Part1/Results/Calculated_GNSS_heights_GGM03S'
+        path = '../../geoprog/Part1/Results/Calculated_GNSS_heights_GGM03S'
 
     file = open(path, 'r')
     counter = 0
 
+    # Loops through the text file, saving the values to a dictionary
     for line in file:
         if counter > 0:
             line_values = line.split()
@@ -91,28 +106,36 @@ def get_n_gravimetric(egm=True):
     return n_dict
 
 
+# Function used to create and return a dictionary containing differences in values between geometric and gravimetric
+# height values
 def get_diff_dict(egm=True):
 
+    # Creates the two dictionaries
     geo_dict = calculate_n_geometric()
     grav_dict = get_n_gravimetric(egm)
 
     diff_dict = {}
 
+    # Creates a dictionary containing differences
     for key in geo_dict:
         diff_dict[key] = geo_dict[key] - grav_dict[key]
 
     return diff_dict
 
 
+# Function used to create and return relevant statistics of the differences
 def get_statistics(dictionary):
 
+    # Two lists to contain the differences, with one being the difference in absolute value
     diffs = []
     abs_diffs = []
 
+    # Appending the values to the empty lists
     for key in dictionary:
         diffs.append(dictionary[key])
         abs_diffs.append(abs(dictionary[key]))
 
+    # Saving the extremum values
     max_diff = max(abs_diffs)
     min_diff = min(abs_diffs)
     mean_diff = np.mean(abs_diffs)
@@ -121,8 +144,10 @@ def get_statistics(dictionary):
     return max_diff, min_diff, mean_diff, std
 
 
+# Main function used to present the statistics for both computational methods.
 def main():
 
+    print('Creating statistics related to the comparison between gravimetric and geometric heights based on EGM2008...')
     diff_dict_egm = get_diff_dict(egm=True)
 
     max_diff_egm, min_diff_egm, mean_diff_egm, std_egm = get_statistics(diff_dict_egm)
@@ -132,8 +157,9 @@ def main():
     print('Mean of differences: ', mean_diff_egm)
     print('Standard deviation: ', std_egm)
 
-    print('-------------------------------------------------')
+    print('-----------------------------------------------------------------------------------------------------------')
 
+    print('Creating statistics related to the comparison between gravimetric and geometric heights based on GGM03S...')
     diff_dict_ggm = get_diff_dict(egm=False)
 
     max_diff_ggm, min_diff_ggm, mean_diff_ggm, std_ggm = get_statistics(diff_dict_ggm)

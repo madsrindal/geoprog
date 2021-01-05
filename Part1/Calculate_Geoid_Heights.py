@@ -2,155 +2,66 @@ from time import time
 import math as mt
 from progressbar import progressbar
 import numpy as np
-from Part1 import Gravimetric_geoid_model as Ggm
-from Part1 import p_bar_testing as pbt
-import multiprocessing as mp
+from Part1 import Sub_Functions_Part1 as SFP1
 
 
-def calculate_ggm_model_world():
+# Main function used for computation and saving of gravimetric geoidal heights.
+def calculate_geoidal_heights_world(n_max, egm=True):
     start_time = time()
-    print("Program starting...")
 
-    print('Creating dictionaries from the GGM03S file')
-    ggm03s_dict = Ggm.read_file(False)
-    file = open('../../geoprog/Part1/Results/ggm_results.txt', 'w')
-    file.write('LAT\tLON\tGeoidal Height\n')
+    # Check to determine what model to calculate and where to save the results.
+    print('Creating a dictionary containing necessary coefficients for each pair of n and m...')
+    if egm:
+        data_dict = SFP1.read_file(True)
+        file_name = 'egm_results_test.txt'
+        file_path = '../../geoprog/Part1/Results/' + file_name
+        model_name = 'EGM2008'
 
-    print('Calculating geoidal heights all over the world using GGM03S values and writing these to file...')
-    for phi in progressbar(np.arange(-90, 90.5, 0.5)):
-        for lmd in np.arange(-180, 180.5, 0.5):
-            file.write(str(phi) + '\t' + str(lmd) + '\t' + str(Ggm.get_n_grv(phi, lmd, ggm03s_dict, n_max=180)) + '\n')
+    else:
+        data_dict = SFP1.read_file(False)
+        file_name = 'ggm_results_test.txt'
+        file_path = '../../geoprog/Part1/Results/' + file_name
+        model_name = 'GGM03S'
 
-    file.close()
-    print('---------------------------------------------------------------------------------------------------------')
-    print('Calculated geoidal heights using GGM03S values in ' + str(time() - start_time) + ' seconds')
+    # Creation of matricces containing values of r and q for each pair om n and m up to n_max.
+    print('Creating r_ and q_matrices...')
+    r_matrix, q_matrix = SFP1.get_rq_bar_matrix(data_dict, n_max)
 
-
-def calculate_egm_model_world():
-    start_time = time()
-    n_max = 2050
-
-    print('Creating dictionaries from the EGM2008 file')
-    egm2008_dict = Ggm.read_file()
-
-    print('Creating r_ and q_matrices, multiplying each matrix with cos and sin of radians(lambda)*m')
-    r_matrix, q_matrix = pbt.get_rq_bar_matrix(egm2008_dict, n_max)
-
+    # Creates an empty dictionary to contain height values for each pair of phi and lmd
     n_dict = {}
 
-    '''print('Creating two lists containing of different matrices based on different lambdas...')
-    r_matrix_list = []
-    q_matrix_list = []
-    
-    for lmd in np.arange(-180, 180.5, 0.5):
-        r = np.copy(r_matrix)
-        q = np.copy(q_matrix)
-        for m in range(0, n_max+1):
-            r[:, m] *= mt.cos(m * mt.radians(lmd))
-            q[:, m] *= mt.sin(m * mt.radians(lmd))
-        r_matrix_list.append(r)
-        q_matrix_list.append(q)'''
-
+    # Computing the height values
     print('Calculating geoidal heights all over the world using EGM2008 values and writing these to file...')
+    # Looping through phi on top as the p values are the same for each phi. In this way, the construction of the full
+    # p_matrix is limited to the least amount of constructions, and hence being more time effective.
     for phi in progressbar(np.arange(-90, 90.5, 0.5)):
 
-        p_matrix = np.zeros((n_max+1) ** 2).reshape(n_max+1, n_max+1)
+        # Creating the full p_matrix consisting of p_values for each pair of n and m for the specific phi.
+        p_matrix = np.zeros((n_max + 1) ** 2).reshape(n_max + 1, n_max + 1)
         p_value_dict = {}
-        for n in range(0, n_max+1):
-            for m in range(0, n_max+1):
-                p_matrix[n][m] = pbt.get_p_bar(n, m, mt.radians(phi), p_value_dict)
+        for n in range(0, n_max + 1):
+            for m in range(0, n_max + 1):
+                p_matrix[n][m] = SFP1.get_p_bar(n, m, mt.radians(phi), p_value_dict)
 
+        # Looping through each lambda in order to compute the height. A copy of the r and q matrices are being made in
+        # order to secure the original matrices.
         for lmd in np.arange(-180, 180.5, 0.5):
             r = np.copy(r_matrix)
             q = np.copy(q_matrix)
+            # Performing trigonometric operations on the whole matrices in order to save computational time.
             for m in range(0, n_max + 1):
                 r[:, m] *= mt.cos(m * mt.radians(lmd))
                 q[:, m] *= mt.sin(m * mt.radians(lmd))
+            # Compute the height value for the specific pair of phi and lambda.
+            n_dict[(phi, lmd)] = SFP1.get_n_grv(lmd, n_max, p_matrix, r, q)
 
-            n_dict[(phi, lmd)] = pbt.get_n_grv_new1(lmd, n_max, p_matrix, r, q)
-            # file.write(str(phi)+'\t'+str(lmd)+'\t'+str(pbt.get_n_grv_new1(lmd, n_max, p_matrix, r, q)) + '\n')
-
-    file = open('Part1/Results/egm_results_n2050_final.txt', 'w')
+    # Saving the computed dictionary of height values to file. This helps making the geoidal maps faster,
+    # and not having to run the entire computations every time.
+    file = open(file_path, 'w')
     file.write('LAT\tLON\tGeoidal Height\n')
     for key in n_dict:
-        file.write(str(key[0])+'\t'+str(key[1])+'\t'+str(n_dict[key]) + '\n')
+        file.write(str(key[0]) + '\t' + str(key[1]) + '\t' + str(n_dict[key]) + '\n')
     file.close()
 
-    print('Calculated geoidal heights using EGM2008 values in ' + str(time()-start_time) + ' seconds')
-
-
-def test():
-    tid = time()
-    # egm2008_dict = Ggm.read_file()
-    ggm03s_dict = Ggm.read_file(False)
-    # print(egm2008_dict)
-    print(Ggm.get_n_grv(61.9308563192723, 5.12764703841812, ggm03s_dict, 180))
-    # print(Ggm.get_p_bar(2, 0, mt.asin(0.5)))
-    # print(Ggm.get_r_bar(100, 89, ggm03s_dict))
-    print('Calculated one N in ' + str(time()-tid) + ' seconds.')
-
-    # lengde: 10.592871601647
-    # bredde: 59.4218454378833
-    # full n
-
-
-'''def tull(n_max):
-    egm_dict = Ggm.read_file(True)
-
-    r_matrix, q_matrix = pbt.get_rq_bar_matrix(egm_dict, n_max)
-
-    r_matrix_list = []
-    q_matrix_list = []
-
-    for lmd in progressbar(np.arange(-180, 180, 0.5)):
-        r = np.copy(r_matrix)
-        q = np.copy(q_matrix)
-        for m in range(0, n_max + 1):
-            r[:, m] *= mt.cos(m * mt.radians(lmd))
-            q[:, m] *= mt.sin(m * mt.radians(lmd))
-        r_matrix_list.append(r)
-        q_matrix_list.append(q)
-
-    return r_matrix_list, q_matrix_list'''
-
-
-def test_script(n_max, phi, lmd):
-    s1 = time()
-    egm_dict = Ggm.read_file(True)
-    print('Sekunder brukt på å lage egm_dict: ', time() - s1)
-
-    s2 = time()
-    # p_mtrix, p_dict = tull(phi)
-    print('Sekunder brukt på å lage p_matrix: ', time() - s2)
-
-    s3 = time()
-    r_mtrix, q_mtrix = pbt.get_rq_bar_matrix(egm_dict, n_max)
-    r_mtrix1, q_mtrix1 = pbt.get_rq_bar_matrix(egm_dict, n_max)
-    print('Sekunder brukt på å lage 2x r_ og q_matrix: ', time() - s3)
-
-    s8 = time()
-    for m in range(0, n_max+1):
-        r_mtrix1[:, m] *= mt.cos(m * mt.radians(lmd))
-        q_mtrix1[:, m] *= mt.sin(m * mt.radians(lmd))
-    print('Sekunder brukt på å gange matrisene med sin og cos: ', time() - s8)
-
-    start = time()
-    # print(pbt.get_n_grv_new(lmd, n_max, p_mtrix, r_mtrix, q_mtrix))
-    print('Sekunder brukt på å regne ut n: ', time() - start)
-
-    start = time()
-    # print(pbt.get_n_grv_new1(lmd, n_max, p_mtrix, r_mtrix1, q_mtrix1))
-    print('Sekunder brukt på å regne ut n_modified: ', time() - start)
-
-
-if __name__ == '__main__':
-    # start = time()
-    calculate_egm_model_world()
-    # print('Sekunder brukt på n=50, og full liste med matriser: ', time()-start)
-
-    # start = time()
-    # test_script(2050, -90, -90)
-    # tull(2050)
-    # print('Sekunder brukt på å regne ut matrise-listene: ', time()-start)
-
-    # England: (phi: 20[45. 65]), (lmd: 30[-20, 10])
+    print('Calculated geoidal heights using ' + str(model_name) + ' values of degree n=' + str(n_max) + ' in ' +
+          str(time() - start_time) + ' seconds. The results are saved as ' + file_name + ' found in the results folder')
